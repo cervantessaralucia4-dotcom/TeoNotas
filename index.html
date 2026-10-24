@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TeoNotas - Cuaderno para Reuniones y Asambleas</title>
+  <meta name="description" content="Aplicación web para celulares, tablets y PC para tomar notas de reuniones cristianas y asambleas, estructurada en 4 secciones y con selector de textos bíblicos de la Traducción del Nuevo Mundo (TNM).">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%234a6da7%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z%22/><path d=%22M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z%22/></svg>">
+</head>
+<body class="font-roboto">
+
+  <!-- CABECERA SUPERIOR -->
+  <header class="app-header">
+    <div class="header-left">
+      <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" aria-label="Abrir catálogo de notas" title="Menú de notas">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+
+      <div class="app-brand">
+        <div class="brand-icon-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <div class="brand-text-group">
+          <h1 class="brand-title">TeoNotas</h1>
+          <span class="brand-subtitle">Reuniones & Asambleas · TNM</span>
+        </div>
+      </div>
+
+      <!-- Selector de Vistas Principales: Inicio y Cuaderno -->
+      <nav class="header-nav-views" aria-label="Vistas principales">
+        <button class="nav-view-btn active" id="btn-nav-home" title="Ir a la pantalla de Inicio">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Inicio</span>
+        </button>
+        <button class="nav-view-btn" id="btn-nav-editor" title="Ir al cuaderno de apuntes">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span>Cuaderno</span>
+        </button>
+      </nav>
+
+      <!-- Botón de Guía / ¿Cómo usar? -->
+      <button class="btn-how-to-use" id="btn-open-guide" title="Ver guía rápida de uso">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+        <span>¿Cómo usar?</span>
+      </button>
+
+      <div class="header-search">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" id="search-notes-input" placeholder="Buscar en notas o textos bíblicos..." autocomplete="off">
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- Perfil / Nombre del Usuario (Toca para editar) -->
+      <button class="user-chip-btn" id="btn-user-badge" title="Toca para cambiar tu nombre">
+        <span class="user-chip-avatar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <span class="user-chip-name" id="user-badge-name">Usuario</span>
+      </button>
+
+      <!-- Selector de Temas -->
+      <div class="theme-selector" title="Cambiar tema visual">
+        <button class="theme-btn active" data-theme="dark" title="Modo Noche">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          <span>Noche</span>
+        </button>
+        <button class="theme-btn" data-theme="light" title="Modo Luz">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <span>Luz</span>
+        </button>
+        <button class="theme-btn" data-theme="sepia" title="Modo Sepia">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M8 2h8a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4Z"/><path d="M8 2v20"/></svg>
+          <span>Sepia</span>
+        </button>
+      </div>
+
+      <!-- Modo Enfoque -->
+      <button class="btn btn-outline btn-sm" id="btn-toggle-fullscreen" title="Modo lectura/escritura sin distracciones">
+        <span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          Enfoque
+        </span>
+      </button>
+
+      <!-- Botón Nueva Nota Directo -->
+      <button class="btn-new-note" id="btn-new-note" title="Crear un nuevo apunte limpio">
+        <span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva Nota
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <!-- LAYOUT PRINCIPAL -->
+  <div class="app-layout">
+
+    <!-- BARRA LATERAL IZQUIERDA: Filtros y Lista de Notas -->
+    <aside class="app-sidebar" id="app-sidebar">
+      
+      <!-- Navegación por Categorías de Reuniones -->
+      <nav class="sidebar-filters-nav" aria-label="Categorías de reuniones">
+        <button class="nav-filter-btn active" data-filter="all">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h7"/><circle cx="18" cy="18" r="3"/></svg>
+            Todas las notas
+          </span>
+          <span class="count-badge" data-count-for="all">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="pinned">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-gold);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Destacadas
+          </span>
+          <span class="count-badge" data-count-for="pinned">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="fin_semana">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
+            Fin de Semana
+          </span>
+          <span class="count-badge" data-count-for="fin_semana">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="entre_semana">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+            Vida y Ministerio
+          </span>
+          <span class="count-badge" data-count-for="entre_semana">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="asamblea_circuito">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M3.5 21 12 3l8.5 18"/><path d="M12 3v18"/><path d="m14 21 3.5-6"/><path d="m6.5 15 3.5 6"/></svg>
+            Asambleas Circuito
+          </span>
+          <span class="count-badge" data-count-for="asamblea_circuito">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="asamblea_regional">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            Asambleas Regionales
+          </span>
+          <span class="count-badge" data-count-for="asamblea_regional">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="especial">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+            Visitas Especiales
+          </span>
+          <span class="count-badge" data-count-for="especial">0</span>
+        </button>
+        <button class="nav-filter-btn" data-filter="estudio_personal">
+          <span class="filter-label">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+            Adoración en Familia
+          </span>
+          <span class="count-badge" data-count-for="estudio_personal">0</span>
+        </button>
+      </nav>
+
+      <!-- Nube de Textos Bíblicos Citados -->
+      <div class="sidebar-scripture-cloud">
+        <div class="cloud-title">
+          <span style="display:inline-flex; align-items:center; gap:5px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+            Textos Más Citados en tus Notas
+          </span>
+        </div>
+        <div class="cloud-chips-wrapper" id="global-scriptures-cloud">
+          <!-- Chips dinámicos -->
+        </div>
+      </div>
+
+      <!-- Contenedor del Catálogo de Notas -->
+      <div class="notes-catalog-container" id="notes-catalog-list" role="feed" aria-label="Lista de notas">
+        <!-- Tarjetas de notas dinámicas -->
+      </div>
+
+      <!-- Respaldo en pie de sidebar -->
+      <div class="sidebar-backup-footer" style="padding: 0.6rem 0.8rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; gap: 0.4rem;">
+        <button class="btn btn-outline btn-sm" id="btn-export-backup" title="Guardar copia de seguridad en archivo JSON" style="flex: 1; font-size: 0.72rem; padding: 0.25rem 0.4rem; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Respaldo
+        </button>
+        <label class="btn btn-outline btn-sm" title="Restaurar copia de seguridad" style="flex: 1; font-size: 0.72rem; padding: 0.25rem 0.4rem; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Restaurar
+          <input type="file" id="input-import-backup" accept=".json" style="display: none;">
+        </label>
+      </div>
+
+    </aside>
+
+    <!-- ESPACIO DE TRABAJO PRINCIPAL: INICIO O EDITOR DE 4 SECCIONES -->
+    <main class="main-workspace">
+
+      <!-- ========================================================
+           PANTALLA DE INICIO (HOME VIEW)
+           ======================================================== -->
+      <div class="view-panel home-view-panel" id="home-view">
+        <div class="home-content-scroll">
+          
+          <!-- Banner Superior de Bienvenida con el Nombre -->
+          <header class="home-hero-banner">
+            <div class="home-hero-content">
+              <div class="home-greeting-pill">
+                <span class="home-greeting-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                </span>
+                <span id="home-greeting-time">Bienvenido a tu Cuaderno</span>
+              </div>
+              <h1 class="home-hero-title">
+                ¡Hola, <span class="home-user-name-highlight" id="home-user-name">Querido Hermano</span>!
+              </h1>
+              <p class="home-hero-subtitle">
+                Listo para registrar los puntos edificantes y textos clave de la reunión de hoy.
+              </p>
+              
+              <div class="home-hero-meta-row">
+                <div class="home-date-chip">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+                  <span id="home-current-date-text">Cargando fecha...</span>
+                </div>
+                <button class="btn-change-name-inline" id="btn-edit-home-name" title="Cambiar tu nombre">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                  <span>Cambiar mi nombre</span>
+                </button>
+                <button class="btn btn-sm btn-outline" id="btn-continue-last-note" style="display: none;" title="Abrir tu apunte actual">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Ir al apunte abierto</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Cita Bíblica Estimulante de la TNM -->
+            <div class="home-scripture-card">
+              <div class="scripture-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span>Traducción del Nuevo Mundo</span>
+              </div>
+              <p class="scripture-text">
+                «Hijo mío, sé sabio y alegra mi corazón, para que yo le pueda responder al que me desafía.»
+              </p>
+              <div class="scripture-reference">
+                — Proverbios 27:11
+              </div>
+            </div>
+          </header>
+
+          <!-- SECCIÓN: INICIAR APUNTE RÁPIDO SEGÚN LA REUNIÓN -->
+          <section class="home-section" aria-labelledby="home-sec-quickstart">
+            <div class="home-section-header">
+              <div>
+                <h2 class="home-section-title" id="home-sec-quickstart">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-gold);"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                  <span>¿Qué reunión o asamblea tienes hoy?</span>
+                </h2>
+                <p class="home-section-subtitle">Selecciona el tipo de reunión para abrir un nuevo apunte organizado en sus 4 secciones:</p>
+              </div>
+            </div>
+
+            <div class="home-quick-meetings-grid">
+              <!-- Tarjeta 1: Fin de semana -->
+              <div class="quick-meeting-card" data-create-type="fin_semana">
+                <div class="meeting-card-icon" style="background: rgba(74, 109, 167, 0.15); color: #6d93d1;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
+                </div>
+                <div class="meeting-card-info">
+                  <span class="meeting-card-badge">Fin de Semana</span>
+                  <h3 class="meeting-card-title">Discurso Público y La Atalaya</h3>
+                  <p class="meeting-card-desc">Ideal para registrar el discurso de 30 min y las perlas del estudio semanal de La Atalaya.</p>
+                </div>
+                <button class="btn-start-meeting" title="Crear apunte de Fin de Semana">
+                  + Tomar Apuntes
+                </button>
+              </div>
+
+              <!-- Tarjeta 2: Entre semana -->
+              <div class="quick-meeting-card" data-create-type="entre_semana">
+                <div class="meeting-card-icon" style="background: rgba(13, 148, 136, 0.15); color: #14b8a6;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+                </div>
+                <div class="meeting-card-info">
+                  <span class="meeting-card-badge teal">Entre Semana</span>
+                  <h3 class="meeting-card-title">Vida y Ministerio Cristianos</h3>
+                  <p class="meeting-card-desc">Tesoros de la Biblia, Seamos Mejores Maestros y Nuestra Vida Cristiana.</p>
+                </div>
+                <button class="btn-start-meeting" title="Crear apunte de Entre Semana">
+                  + Tomar Apuntes
+                </button>
+              </div>
+
+              <!-- Tarjeta 3: Asamblea de Circuito -->
+              <div class="quick-meeting-card" data-create-type="asamblea_circuito">
+                <div class="meeting-card-icon" style="background: rgba(124, 58, 237, 0.15); color: #a78bfa;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M3.5 21 12 3l8.5 18"/><path d="M12 3v18"/><path d="m14 21 3.5-6"/><path d="m6.5 15 3.5 6"/></svg>
+                </div>
+                <div class="meeting-card-info">
+                  <span class="meeting-card-badge purple">Asamblea de Circuito</span>
+                  <h3 class="meeting-card-title">Programa de 1 Día</h3>
+                  <p class="meeting-card-desc">Apuntes para la visita del Superintendente de Circuito o Representante de Sucursal.</p>
+                </div>
+                <button class="btn-start-meeting" title="Crear apunte de Asamblea de Circuito">
+                  + Tomar Apuntes
+                </button>
+              </div>
+
+              <!-- Tarjeta 4: Asamblea Regional -->
+              <div class="quick-meeting-card" data-create-type="asamblea_regional">
+                <div class="meeting-card-icon" style="background: rgba(192, 38, 211, 0.15); color: #e879f9;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                </div>
+                <div class="meeting-card-info">
+                  <span class="meeting-card-badge magenta">Asamblea Regional</span>
+                  <h3 class="meeting-card-title">Gran Asamblea (3 Días)</h3>
+                  <p class="meeting-card-desc">Series de discursos, representaciones dramáticas y discursos temáticos del programa.</p>
+                </div>
+                <button class="btn-start-meeting" title="Crear apunte de Asamblea Regional">
+                  + Tomar Apuntes
+                </button>
+              </div>
+
+              <!-- Tarjeta 5: Adoración en Familia -->
+              <div class="quick-meeting-card" data-create-type="estudio_personal">
+                <div class="meeting-card-icon" style="background: rgba(37, 99, 235, 0.15); color: #60a5fa;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10"/><path d="M6 10h10"/></svg>
+                </div>
+                <div class="meeting-card-info">
+                  <span class="meeting-card-badge blue">Estudio Personal</span>
+                  <h3 class="meeting-card-title">Adoración en Familia</h3>
+                  <p class="meeting-card-desc">Proyectos familiares, lectura bíblica semanal y temas de investigación personal.</p>
+                </div>
+                <button class="btn-start-meeting" title="Crear apunte de Adoración en Familia">
+                  + Tomar Apuntes
+                </button>
+              </div>
+
+              <!-- Tarjeta 6: Visita Especial / Conmemoración -->
+              <div class="quick-meeting-card" data-create-type="especial">
+                <div class="meeting-card-icon" style="background: rgba(217, 119, 6, 0.15); color: #fbbf24;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+                </div>
+                <div class="meeting-card-info">
+                  <span class="meeting-card-badge amber">Especial</span>
+                  <h3 class="meeting-card-title">Visitas Especiales & Conmemoración</h3>
+                  <p class="meeting-card-desc">Ocasiones solemnes y programas especiales anuales.</p>
+                </div>
+                <button class="btn-start-meeting" title="Crear apunte Especial">
+                  + Tomar Apuntes
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- SECCIÓN: TUS APUNTES RECIENTES -->
+          <section class="home-section" aria-labelledby="home-sec-recents">
+            <div class="home-section-header">
+              <div>
+                <h2 class="home-section-title" id="home-sec-recents">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h7"/><circle cx="18" cy="18" r="3"/></svg>
+                  <span>Tus Apuntes Recientes</span>
+                </h2>
+                <p class="home-section-subtitle">Accede rápidamente a tus notas guardadas en este dispositivo:</p>
+              </div>
+              <button class="btn btn-sm btn-outline" id="btn-home-view-all-notes" title="Ver todas las notas en el menú lateral" style="display: inline-flex; align-items: center; gap: 4px;">
+                <span>Ver Catálogo Completo</span>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            </div>
+
+            <!-- Contenedor dinámico de notas recientes -->
+            <div class="home-recent-notes-container" id="home-recent-notes-container">
+              <!-- Renderizado dinámicamente con JS -->
+            </div>
+          </section>
+
+        </div>
+      </div>
+
+      <!-- ========================================================
+           EDITOR DE APUNTES (4 SECCIONES)
+           ======================================================== -->
+      <div class="view-panel editor-view-panel hidden" id="editor-view">
+
+        <!-- SCROLL CONTAINER GENERAL PARA LAS 4 SECCIONES -->
+        <div class="note-sections-scroll-wrapper">
+
+        <!-- ========================================================
+             SECCIÓN 1: TÍTULO Y DATOS DE LA REUNIÓN
+             ======================================================== -->
+        <section class="note-section-card section-1-header" aria-labelledby="sec1-title">
+          <div class="section-badge-row">
+            <span class="section-pill">Sección 1</span>
+            <span class="section-name" id="sec1-title">Título y Datos de la Reunión</span>
+            
+            <div class="note-actions-toolbar">
+              <span class="save-status saved" id="save-status-indicator" style="display: inline-flex; align-items: center; gap: 3px;">
+                Guardado
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              
+              <button class="btn btn-outline btn-sm" id="btn-pin-current-note" title="Fijar nota arriba" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span>Fijar</span>
+              </button>
+
+              <button class="btn btn-outline btn-sm" id="btn-copy-summary" title="Copiar resumen para WhatsApp o mensajes" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copiar Resumen</span>
+              </button>
+
+              <div class="dropdown">
+                <button class="btn btn-outline btn-sm dropdown-toggle" title="Más opciones de exportación" style="display: inline-flex; align-items: center; gap: 4px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                  <span>Opciones</span>
+                </button>
+                <div class="dropdown-menu">
+                  <button class="dropdown-item" id="btn-print-note" style="display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Imprimir / Guardar PDF
+                  </button>
+                  <button class="dropdown-item" id="btn-export-markdown" style="display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Exportar Markdown (.md)
+                  </button>
+                  <div class="dropdown-divider"></div>
+                  <button class="dropdown-item" id="btn-delete-current-note" style="color: var(--accent-rose); display: flex; align-items: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                    Eliminar esta nota
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector de Tipo de Reunión y Título Principal -->
+          <div class="sec1-inputs-group">
+            <select class="note-type-select" id="note-type-select" aria-label="Tipo de reunión">
+              <!-- Opciones dinámicas de JW.ORG -->
+            </select>
+            <input type="text" class="note-title-input" id="note-title-input" placeholder="Escribe aquí el tema del discurso o título..." value="">
+          </div>
+
+          <!-- Campos complementarios: Orador, Fecha, Lugar -->
+          <div class="metadata-fields-grid">
+            <div class="meta-field-item">
+              <span class="field-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input type="text" id="note-speaker-input" placeholder="Discursante / Orador">
+            </div>
+            <div class="meta-field-item">
+              <span class="field-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
+              </span>
+              <input type="datetime-local" id="note-date-input">
+            </div>
+            <div class="meta-field-item">
+              <span class="field-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              </span>
+              <input type="text" id="note-location-input" placeholder="Salón del Reino / Salón de Asambleas">
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             SECCIÓN 2: TEXTO CLAVE O BASE
+             ======================================================== -->
+        <section class="note-section-card section-2-key-scripture" aria-labelledby="sec2-title">
+          <div class="section-badge-row">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="section-pill gold">Sección 2</span>
+              <span class="section-name" id="sec2-title">Texto Clave o Base del Discurso</span>
+            </div>
+            <div class="sec2-actions">
+              <button class="btn btn-sm btn-primary" id="btn-pick-key-scripture" title="Abrir selector bíblico para el texto temático" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                <span>Escoger Texto Base</span>
+              </button>
+              <button class="btn btn-sm btn-outline" id="btn-clear-key-scripture" title="Limpiar texto base">
+                Limpiar
+              </button>
+            </div>
+          </div>
+
+          <div class="key-scripture-container">
+            <div class="key-scripture-ref-row">
+              <span class="key-sc-icon" style="display:inline-flex; align-items:center; gap:4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-gold);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Cita:
+              </span>
+              <input type="text" id="key-scripture-ref" placeholder="Ej: Mateo 24:14 o Salmos 83:18">
+            </div>
+            <div class="key-scripture-text-row">
+              <textarea id="key-scripture-text" rows="2" placeholder="Texto bíblico base (Traducción del Nuevo Mundo)..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             SECCIÓN 3: DESARROLLO DEL TEMA O DISCURSO
+             ======================================================== -->
+        <section class="note-section-card section-3-development" aria-labelledby="sec3-title">
+          <div class="section-badge-row">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span class="section-pill blue">Sección 3</span>
+              <span class="section-name" id="sec3-title">Desarrollo del Tema o Discurso</span>
+            </div>
+
+            <!-- Controles de Tipografía -->
+            <div class="font-controls" title="Ajustar tamaño y estilo de letra">
+              <button class="tool-btn font-size-btn" id="btn-font-decrease" title="Reducir tamaño de letra">A-</button>
+              <button class="tool-btn font-size-btn" id="btn-font-increase" title="Aumentar tamaño de letra">A+</button>
+              <select class="font-family-select" id="font-family-select" title="Cambiar tipo de letra">
+                <option value="roboto">Roboto (JW.ORG)</option>
+                <option value="noto">Noto Sans</option>
+                <option value="serif">Merriweather (Serif)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Barra de herramientas para el desarrollo -->
+          <div class="editor-toolbar" aria-label="Herramientas de formato para el desarrollo">
+            <!-- Botón para citar textos secundarios dentro del desarrollo -->
+            <div class="toolbar-group">
+              <button class="btn btn-open-bible-picker" title="Insertar cita bíblica dentro de los apuntes (Ctrl+Alt+B)" style="display: inline-flex; align-items: center; gap: 5px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+                <span>Citar Texto en los Apuntes</span>
+              </button>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <!-- Encabezados -->
+            <div class="toolbar-group">
+              <button class="tool-btn" data-format="formatBlock" data-value="h2" title="Encabezado Principal (H2)">H2</button>
+              <button class="tool-btn" data-format="formatBlock" data-value="h3" title="Subtítulo (H3)">H3</button>
+              <button class="tool-btn" data-format="formatBlock" data-value="p" title="Párrafo normal">¶</button>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <!-- Estilos -->
+            <div class="toolbar-group">
+              <button class="tool-btn" data-format="bold" title="Negrita (Ctrl+B)"><strong>B</strong></button>
+              <button class="tool-btn" data-format="italic" title="Cursiva (Ctrl+I)"><em>I</em></button>
+              <button class="tool-btn" data-format="underline" title="Subrayado (Ctrl+U)"><u>U</u></button>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <!-- Listas -->
+            <div class="toolbar-group">
+              <button class="tool-btn" data-format="insertUnorderedList" title="Lista con viñetas">• Viñetas</button>
+              <button class="tool-btn" data-format="insertOrderedList" title="Lista numerada">1. Lista</button>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <!-- Resaltadores -->
+            <div class="toolbar-group">
+              <div class="highlight-palette" title="Resaltador">
+                <button class="hl-color-btn" data-color="#fef08a" style="background: #fef08a;" title="Resaltar Amarillo"></button>
+                <button class="hl-color-btn" data-color="#bbf7d0" style="background: #bbf7d0;" title="Resaltar Verde"></button>
+                <button class="hl-color-btn" data-color="#bae6fd" style="background: #bae6fd;" title="Resaltar Celeste"></button>
+                <button class="hl-color-btn" data-color="#fbcfe8" style="background: #fbcfe8;" title="Resaltar Rosa"></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hoja donde se escribe el desarrollo -->
+          <div class="development-paper-container">
+            <article class="editor-paper" id="note-editor-content" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" placeholder="Escribe aquí el desarrollo del discurso, argumentos y explicaciones...">
+              <!-- Contenido del desarrollo -->
+            </article>
+          </div>
+        </section>
+
+        <!-- ========================================================
+             SECCIÓN 4: RESUMEN Y APLICACIÓN PERSONAL
+             ======================================================== -->
+        <section class="note-section-card section-4-summary-app" aria-labelledby="sec4-title">
+          <div class="section-badge-row">
+            <span class="section-pill green">Sección 4</span>
+            <span class="section-name" id="sec4-title">Resumen y Aplicación Personal</span>
+          </div>
+
+          <div class="sec4-grid">
+            <!-- 4.1 Resumen -->
+            <div class="sec4-card-item">
+              <label for="note-summary-input" class="sec4-label">
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-gold);"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                  <strong>Resumen del Discurso:</strong>
+                </span>
+                <small>Ideas principales y puntos clave a recordar</small>
+              </label>
+              <textarea id="note-summary-input" rows="3" placeholder="Resume en 2 o 3 ideas las conclusiones principales que enseñó el orador..."></textarea>
+            </div>
+
+            <!-- 4.2 Aplicación Personal -->
+            <div class="sec4-card-item">
+              <label for="note-application-input" class="sec4-label">
+                <span style="display:inline-flex; align-items:center; gap:5px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-teal);"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="6" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                  <strong>Aplicación Personal:</strong>
+                </span>
+                <small>¿Cómo lo pondré en práctica en mi vida esta semana?</small>
+              </label>
+              <textarea id="note-application-input" rows="3" placeholder="Escribe una meta específica para el ministerio, la familia o tu adoración a Jehová..."></textarea>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- BANDEJA DERECHA: TEXTOS CITADOS EN LA REUNIÓN (FLOTANTE O EN PANEL) -->
+      <aside class="meeting-scriptures-tray" aria-label="Textos bíblicos citados en la reunión">
+        <div class="tray-header">
+          <span class="tray-header-title" style="display:inline-flex; align-items:center; gap:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <span>Textos Citados (TNM)</span>
+          </span>
+          <span class="tray-count-pill" id="cited-scriptures-count">0</span>
+        </div>
+
+        <div class="tray-content-scroll" id="cited-scriptures-list">
+          <!-- Lista en vivo de textos citados -->
+        </div>
+      </aside>
+
+      </div> <!-- /#editor-view -->
+
+    </main>
+
+  </div>
+
+  <!-- BOTÓN FLOTANTE (FAB) PARA CELULARES Y TABLETS -->
+  <button class="fab-bible-picker btn-open-bible-picker" id="mobile-fab-bible" aria-label="Añadir texto bíblico" style="display: inline-flex; align-items: center; gap: 5px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+    <span>Citar Texto</span>
+  </button>
+
+  <!-- BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES -->
+  <nav class="mobile-bottom-nav" aria-label="Navegación móvil">
+    <button class="bottom-nav-item active" id="mobile-nav-home">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+      <span>Inicio</span>
+    </button>
+    <button class="bottom-nav-item" id="mobile-nav-editor">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+      <span>Cuaderno</span>
+    </button>
+    <button class="bottom-nav-item btn-center-highlight btn-open-bible-picker" title="Citar texto bíblico">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg></span>
+      <span>+ Citar</span>
+    </button>
+    <button class="bottom-nav-item" id="mobile-nav-notes" title="Ver catálogo de notas">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h7"/><circle cx="18" cy="18" r="3"/></svg></span>
+      <span>Notas</span>
+    </button>
+    <button class="bottom-nav-item" id="mobile-nav-guide" title="Guía de uso">
+      <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg></span>
+      <span>Ayuda</span>
+    </button>
+  </nav>
+
+  <!-- MODAL DE GUÍA RÁPIDA: "¿CÓMO USAR TEONOTAS?" -->
+  <div class="modal-backdrop hidden" id="guide-modal">
+    <div class="modal-dialog guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+          </span>
+          <div>
+            <h3 id="guide-title">Las 4 Secciones de tu Cuaderno de Apuntes</h3>
+            <p class="modal-subtitle">Cómo organizar tus notas de forma clara durante cualquier reunión o asamblea</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-guide" aria-label="Cerrar ventana">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="guide-steps-grid">
+          <div class="guide-step-card">
+            <div class="guide-step-num">1</div>
+            <h4 class="guide-step-title">Sección 1: Título y Datos</h4>
+            <p class="guide-step-desc">
+              Anota el tipo de reunión (Fin de semana, Vida y Ministerio, Asamblea), el tema del discurso, el discursante y el lugar.
+            </p>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-num">2</div>
+            <h4 class="guide-step-title">Sección 2: Texto Clave o Base</h4>
+            <p class="guide-step-desc">
+              Usa el botón <strong>"Escoger Texto Base"</strong> para registrar el versículo temático principal del discurso según la Traducción del Nuevo Mundo.
+            </p>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-num">3</div>
+            <h4 class="guide-step-title">Sección 3: Desarrollo del Discurso</h4>
+            <p class="guide-step-desc">
+              Escribe libremente los argumentos del orador. Usa el botón <strong>"Citar Texto"</strong> cada vez que mencione versículos adicionales.
+            </p>
+          </div>
+
+          <div class="guide-step-card">
+            <div class="guide-step-num">4</div>
+            <h4 class="guide-step-title">Sección 4: Resumen y Aplicación</h4>
+            <p class="guide-step-desc">
+              Concluye con las ideas principales aprendidas y la meta personal práctica para poner en práctica esta semana.
+            </p>
+          </div>
+        </div>
+
+        <div style="background: rgba(74, 109, 167, 0.12); border-left: 4px solid var(--jw-blue); padding: 0.75rem 1rem; border-radius: 6px; font-size: 0.82rem; display: flex; align-items: flex-start; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--jw-blue-light); margin-top:2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <div>
+            <strong>Almacenamiento y Privacidad:</strong> Toda la información se guarda de forma 100% privada en la memoria local de tu dispositivo (Web LocalStorage). Funciona <strong>completamente sin conexión a internet (offline)</strong> en cualquier Salón del Reino o de Asambleas.
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="btn-guide-ok" style="width: 100%;">
+          ¡Entendido! Comenzar a tomar notas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       PANTALLA SPLASH DE BIENVENIDA CON SALUDO PERSONALIZADO
+       ======================================================== -->
+  <div class="splash-screen" id="app-splash" role="dialog" aria-modal="true" aria-label="Pantalla de bienvenida">
+    
+    <!-- EFECTOS DINÁMICOS DETRÁS DE LA VENTANA -->
+    <div class="ambient-fx-backdrop" aria-hidden="true">
+      <div class="ambient-glow-orb orb-primary"></div>
+      <div class="ambient-glow-orb orb-gold"></div>
+      <div class="ambient-glow-orb orb-teal"></div>
+      <div class="ambient-glow-orb orb-purple"></div>
+      <div class="ambient-light-beam beam-1"></div>
+      <div class="ambient-light-beam beam-2"></div>
+      <div class="ambient-grid-mesh"></div>
+      <div class="ambient-particles-layer">
+        <span class="particle p-1"></span>
+        <span class="particle p-2"></span>
+        <span class="particle p-3"></span>
+        <span class="particle p-4"></span>
+        <span class="particle p-5"></span>
+        <span class="particle p-6"></span>
+        <span class="particle p-7"></span>
+        <span class="particle p-8"></span>
+        <span class="particle p-9"></span>
+        <span class="particle p-10"></span>
+        <span class="particle p-11"></span>
+        <span class="particle p-12"></span>
+        <span class="particle p-13"></span>
+        <span class="particle p-14"></span>
+      </div>
+    </div>
+
+    <div class="splash-card glass-luxury">
+      <div class="card-border-glow"></div>
+
+      <div class="splash-emblem-wrapper">
+        <div class="splash-glow"></div>
+        <div class="splash-glow-outer"></div>
+        <span class="splash-emblem">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </span>
+      </div>
+      
+      <div class="splash-titles">
+        <h1 class="splash-app-name">TeoNotas</h1>
+        <p class="splash-app-tagline">Cuaderno para Reuniones y Asambleas · TNM</p>
+      </div>
+
+      <div class="splash-greeting-box">
+        <h2 class="splash-greeting-text" id="splash-user-greeting">¡Hola!</h2>
+        <p class="splash-scripture-quote">«Tu palabra es una lámpara para mi pie y una luz para mi camino»<br><small>— Salmo 119:105</small></p>
+      </div>
+
+      <div class="splash-loader-group">
+        <div class="splash-progress-track">
+          <div class="splash-progress-bar" id="splash-progress-bar"></div>
+        </div>
+        <span class="splash-loading-status" id="splash-loading-status">Preparando tu cuaderno de notas...</span>
+      </div>
+
+      <button class="btn-skip-splash" id="btn-skip-splash" title="Saltar introducción" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+        <span>Continuar al Inicio</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL DE PRIMER USO: REGISTRO DE NOMBRE PERSONALIZADO
+       ======================================================== -->
+  <div class="modal-backdrop hidden" id="onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+    
+    <!-- EFECTOS DINÁMICOS DETRÁS DE LA VENTANA -->
+    <div class="ambient-fx-backdrop" aria-hidden="true">
+      <div class="ambient-glow-orb orb-primary"></div>
+      <div class="ambient-glow-orb orb-gold"></div>
+      <div class="ambient-glow-orb orb-teal"></div>
+      <div class="ambient-glow-orb orb-purple"></div>
+      <div class="ambient-light-beam beam-1"></div>
+      <div class="ambient-light-beam beam-2"></div>
+      <div class="ambient-grid-mesh"></div>
+      <div class="ambient-particles-layer">
+        <span class="particle p-1"></span>
+        <span class="particle p-2"></span>
+        <span class="particle p-3"></span>
+        <span class="particle p-4"></span>
+        <span class="particle p-5"></span>
+        <span class="particle p-6"></span>
+        <span class="particle p-7"></span>
+        <span class="particle p-8"></span>
+        <span class="particle p-9"></span>
+        <span class="particle p-10"></span>
+      </div>
+    </div>
+
+    <div class="modal-dialog onboarding-dialog glass-luxury">
+      <div class="card-border-glow"></div>
+
+      <div class="onboarding-hero-header">
+        <div class="onboarding-icon-ring">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h2 id="onboarding-title">¡Bienvenido a TeoNotas!</h2>
+        <p class="onboarding-subtitle">Tu cuaderno personal para tomar apuntes edificantes en las reuniones, asambleas y estudio familiar.</p>
+      </div>
+
+      <form class="onboarding-form" id="onboarding-name-form" onsubmit="return false;">
+        <div class="onboarding-input-group">
+          <label for="onboarding-name-input" class="onboarding-label">
+            <span style="display:inline-flex; align-items:center; gap:5px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:#0f172a;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <strong>¿Cómo te llamas?</strong>
+            </span>
+            <small>Te saludaremos con tu nombre cada vez que abras la aplicación.</small>
+          </label>
+          <input 
+            type="text" 
+            id="onboarding-name-input" 
+            class="onboarding-input" 
+            placeholder="Escribe tu nombre o apodo (ej: Daniel, Débora, Hno. Ruiz)..." 
+            maxlength="35"
+            autocomplete="name"
+          >
+          <div class="onboarding-error-msg hidden" id="onboarding-error">Por favor, escribe tu nombre o apodo para continuar.</div>
+        </div>
+
+        <div class="onboarding-features-list">
+          <div class="onboarding-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--jw-blue-light); margin-top:2px;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div><strong>Estructurado en 4 Secciones:</strong> Título, Texto Base, Desarrollo y Aplicación Personal.</div>
+          </div>
+          <div class="onboarding-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-gold); margin-top:2px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            <div><strong>Selector Bíblico de la TNM:</strong> Libros, capítulos y versículos exactos según JW.ORG.</div>
+          </div>
+          <div class="onboarding-feature-item">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon" style="color:var(--accent-teal); margin-top:2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div><strong>100% Privado y Offline:</strong> No requiere internet en el Salón; todo se guarda en tu propio dispositivo.</div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding: 0; margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary btn-shine-luxury" id="btn-submit-onboarding" style="width: 100%; padding: 0.85rem; font-size: 0.98rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+            <span>Comenzar a usar TeoNotas</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL PARA EDITAR EL NOMBRE DEL USUARIO
+       ======================================================== -->
+  <div class="modal-backdrop hidden" id="edit-name-modal" role="dialog" aria-modal="true" aria-labelledby="edit-name-title">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </span>
+          <div>
+            <h3 id="edit-name-title">Cambiar mi Nombre</h3>
+            <p class="modal-subtitle">Actualiza cómo te saludará TeoNotas al inicio</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-edit-name" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="edit-name-form" onsubmit="return false;" style="display: flex; flex-direction: column; gap: 0.6rem;">
+          <label for="edit-user-name-input" style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">
+            Tu Nombre o Apodo:
+          </label>
+          <input 
+            type="text" 
+            id="edit-user-name-input" 
+            style="width: 100%; padding: 0.65rem 0.85rem; background: var(--bg-surface); border: 1px solid var(--border-medium); border-radius: var(--radius-md); color: var(--text-primary); font-size: 0.95rem;" 
+            maxlength="35"
+            placeholder="Ej: Daniel, Débora, Hno. Ruiz"
+          >
+          <div class="onboarding-error-msg hidden" id="edit-name-error">El nombre no puede estar vacío.</div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="btn-cancel-edit-name">Cancelar</button>
+        <button class="btn btn-primary" id="btn-save-edit-name">Guardar Nombre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL MODULAR -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -73,6 +73,9 @@ class App {
         this.renderNotesList();
       },
       onOpenBiblePicker: ({ isKeyScripture } = {}) => {
+        if (this.currentView !== 'editor') {
+          this.switchView('editor');
+        }
         this.pickerTarget = isKeyScripture ? 'keyScripture' : 'development';
         this.biblePicker.show();
       }
@@ -156,7 +159,16 @@ class App {
     });
 
     document.getElementById('mobile-nav-notes')?.addEventListener('click', () => {
-      document.getElementById('app-sidebar').classList.toggle('open');
+      this.toggleSidebar();
+    });
+
+    // Cierre de barra lateral mediante backdrop o botón de cerrar
+    document.getElementById('sidebar-backdrop')?.addEventListener('click', () => {
+      this.toggleSidebar(false);
+    });
+
+    document.getElementById('btn-close-sidebar')?.addEventListener('click', () => {
+      this.toggleSidebar(false);
     });
 
     // Perfil y Edición de Nombre
@@ -173,7 +185,7 @@ class App {
     });
 
     document.getElementById('btn-home-view-all-notes')?.addEventListener('click', () => {
-      document.getElementById('app-sidebar').classList.add('open');
+      this.toggleSidebar(true);
     });
 
     // Tarjetas de Inicio Rápido por Tipo de Reunión
@@ -312,7 +324,7 @@ class App {
     const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
     if (btnToggleSidebar) {
       btnToggleSidebar.addEventListener('click', () => {
-        document.getElementById('app-sidebar').classList.toggle('open');
+        this.toggleSidebar();
       });
     }
 
@@ -403,6 +415,21 @@ class App {
 
   closeAllDropdowns() {
     document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+  }
+
+  toggleSidebar(open) {
+    const sidebar = document.getElementById('app-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (!sidebar) return;
+
+    const shouldOpen = open !== undefined ? open : !sidebar.classList.contains('open');
+    if (shouldOpen) {
+      sidebar.classList.add('open');
+      backdrop?.classList.add('active');
+    } else {
+      sidebar.classList.remove('open');
+      backdrop?.classList.remove('active');
+    }
   }
 
   /* ========================================================
@@ -735,7 +762,7 @@ class App {
     });
 
     if (window.innerWidth <= 768) {
-      document.getElementById('app-sidebar')?.classList.remove('open');
+      this.toggleSidebar(false);
     }
   }
 

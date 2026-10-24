@@ -88,19 +88,28 @@
 
       <!-- Botón Nueva Nota Directo -->
       <button class="btn-new-note" id="btn-new-note" title="Crear un nuevo apunte limpio">
-        <span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nueva Nota
-        </span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span class="btn-new-note-text">Nueva Nota</span>
       </button>
     </div>
   </header>
 
   <!-- LAYOUT PRINCIPAL -->
   <div class="app-layout">
+    <!-- Telón de fondo para cerrar la barra lateral en móvil al tocar afuera -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <!-- BARRA LATERAL IZQUIERDA: Filtros y Lista de Notas -->
     <aside class="app-sidebar" id="app-sidebar">
+      
+      <!-- Cabecera móvil del catálogo -->
+      <div class="sidebar-mobile-header">
+        <div class="sidebar-mobile-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h7"/><circle cx="18" cy="18" r="3"/></svg>
+          <span>Catálogo de Apuntes</span>
+        </div>
+        <button class="sidebar-close-btn" id="btn-close-sidebar" aria-label="Cerrar catálogo">&times;</button>
+      </div>
       
       <!-- Navegación por Categorías de Reuniones -->
       <nav class="sidebar-filters-nav" aria-label="Categorías de reuniones">
@@ -641,7 +650,7 @@
   </div>
 
   <!-- BOTÓN FLOTANTE (FAB) PARA CELULARES Y TABLETS -->
-  <button class="fab-bible-picker btn-open-bible-picker" id="mobile-fab-bible" aria-label="Añadir texto bíblico" style="display: inline-flex; align-items: center; gap: 5px;">
+  <button class="fab-bible-picker btn-open-bible-picker" id="mobile-fab-bible" aria-label="Añadir texto bíblico" title="Citar texto bíblico (TNM)">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
     <span>Citar Texto</span>
   </button>

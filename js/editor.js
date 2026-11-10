@@ -44,6 +44,7 @@ export class NoteEditor {
 
     // Indicadores y Bandeja
     this.saveStatusEl = document.getElementById('save-status-indicator');
+    this.mobileSaveStatusEl = document.getElementById('mobile-save-status');
     this.citedScripturesListEl = document.getElementById('cited-scriptures-list');
     this.citedScripturesCountEl = document.getElementById('cited-scriptures-count');
 
@@ -81,7 +82,10 @@ export class NoteEditor {
       this.extractAndUpdateScriptures();
       triggerAutoSave();
     });
-    this.keyScriptureText.addEventListener('input', triggerAutoSave);
+    this.keyScriptureText.addEventListener('input', () => {
+      this.autoExpandTextarea(this.keyScriptureText);
+      triggerAutoSave();
+    });
 
     this.btnPickKeyScripture?.addEventListener('click', () => {
       this.onOpenBiblePicker({ isKeyScripture: true });
@@ -90,6 +94,7 @@ export class NoteEditor {
     this.btnClearKeyScripture?.addEventListener('click', () => {
       this.keyScriptureRef.value = '';
       this.keyScriptureText.value = '';
+      this.autoExpandTextarea(this.keyScriptureText);
       this.extractAndUpdateScriptures();
       triggerAutoSave();
     });
@@ -100,11 +105,28 @@ export class NoteEditor {
       triggerAutoSave();
     });
 
+    // Selección continua y guardado
     this.contentArea.addEventListener('mouseup', () => this.saveSelection());
     this.contentArea.addEventListener('keyup', () => this.saveSelection());
+    this.contentArea.addEventListener('touchend', () => this.saveSelection());
+    document.addEventListener('selectionchange', () => {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        const range = sel.getRangeAt(0);
+        if (this.contentArea.contains(range.commonAncestorContainer)) {
+          this.savedRange = range.cloneRange();
+          this.updateToolbarStates();
+        }
+      }
+    });
 
-    // Botones de formato de texto en Toolbar
+    // Botones de formato de texto en Toolbar (con prevención de pérdida de foco táctil)
     document.querySelectorAll('[data-format]').forEach(btn => {
+      // Evitar que el botón robe el foco del área de texto al tocarlo en celular
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+      btn.addEventListener('pointerdown', (e) => e.preventDefault());
+      btn.addEventListener('touchstart', () => this.saveSelection(), { passive: true });
+
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         const cmd = btn.dataset.format;
@@ -113,8 +135,12 @@ export class NoteEditor {
       });
     });
 
-    // Resaltador
+    // Botones de colores resaltadores y quitar resaltado
     document.querySelectorAll('.hl-color-btn').forEach(hBtn => {
+      hBtn.addEventListener('mousedown', (e) => e.preventDefault());
+      hBtn.addEventListener('pointerdown', (e) => e.preventDefault());
+      hBtn.addEventListener('touchstart', () => this.saveSelection(), { passive: true });
+
       hBtn.addEventListener('click', (e) => {
         e.preventDefault();
         const color = hBtn.dataset.color;
@@ -124,6 +150,7 @@ export class NoteEditor {
 
     // Botones para insertar texto bíblico en el desarrollo
     document.querySelectorAll('.btn-open-bible-picker').forEach(btn => {
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
       btn.addEventListener('click', () => {
         this.saveSelection();
         this.onOpenBiblePicker({ isKeyScripture: false });
@@ -131,8 +158,14 @@ export class NoteEditor {
     });
 
     // Eventos Sección 4: Resumen y Aplicación Personal
-    this.summaryInput.addEventListener('input', triggerAutoSave);
-    this.applicationInput.addEventListener('input', triggerAutoSave);
+    this.summaryInput.addEventListener('input', () => {
+      this.autoExpandTextarea(this.summaryInput);
+      triggerAutoSave();
+    });
+    this.applicationInput.addEventListener('input', () => {
+      this.autoExpandTextarea(this.applicationInput);
+      triggerAutoSave();
+    });
 
     // Atajo de teclado: Ctrl+Alt+B
     document.addEventListener('keydown', (e) => {
@@ -159,8 +192,11 @@ export class NoteEditor {
 
   saveSelection() {
     const sel = window.getSelection();
-    if (sel.rangeCount > 0) {
-      this.savedRange = sel.getRangeAt(0);
+    if (sel && sel.rangeCount > 0) {
+      const r = sel.getRangeAt(0);
+      if (this.contentArea.contains(r.commonAncestorContainer)) {
+        this.savedRange = r.cloneRange();
+      }
     }
   }
 
@@ -172,9 +208,37 @@ export class NoteEditor {
     }
   }
 
+  selectWordAtCursor() {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount || !sel.isCollapsed) return;
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent;
+      let start = range.startOffset;
+      let end = range.startOffset;
+      const isWordChar = (c) => c && /[a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ]/.test(c);
+      while (start > 0 && isWordChar(text[start - 1])) start--;
+      while (end < text.length && isWordChar(text[end])) end++;
+      if (end > start) {
+        range.setStart(node, start);
+        range.setEnd(node, end);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        this.savedRange = range.cloneRange();
+      }
+    }
+  }
+
   executeFormat(command, value = null) {
     this.contentArea.focus();
     this.restoreSelection();
+
+    // En móviles: Si el cursor está colapsado en una palabra, seleccionar automáticamente esa palabra
+    const sel = window.getSelection();
+    if (sel && sel.isCollapsed && ['bold', 'italic', 'underline'].includes(command)) {
+      this.selectWordAtCursor();
+    }
 
     if (command === 'formatBlock') {
       document.execCommand('formatBlock', false, value);
@@ -185,22 +249,101 @@ export class NoteEditor {
     }
     
     this.saveSelection();
+    this.updateToolbarStates();
     this.saveCurrentNote();
+  }
+
+  updateToolbarStates() {
+    document.querySelectorAll('[data-format]').forEach(btn => {
+      const cmd = btn.dataset.format;
+      if (['bold', 'italic', 'underline'].includes(cmd)) {
+        try {
+          const isActive = document.queryCommandState(cmd);
+          btn.classList.toggle('active', isActive);
+        } catch (e) {}
+      }
+    });
   }
 
   applyHighlight(color = '#fef08a') {
     this.contentArea.focus();
     this.restoreSelection();
-    
+
     const sel = window.getSelection();
-    if (!sel.isCollapsed && sel.rangeCount > 0) {
-      const range = sel.getRangeAt(0);
+    if (!sel || !sel.rangeCount) return;
+
+    let range = sel.getRangeAt(0);
+
+    // Si el cursor está sobre una palabra sin seleccionar, auto-seleccionar la palabra
+    if (sel.isCollapsed) {
+      this.selectWordAtCursor();
+      range = sel.getRangeAt(0);
+    }
+
+    // Verificar si estamos dentro de un elemento <mark> o .note-highlight existente
+    let currentMark = null;
+    let parentNode = range.commonAncestorContainer;
+    if (parentNode.nodeType === Node.TEXT_NODE) parentNode = parentNode.parentNode;
+    if (parentNode && parentNode.closest) {
+      currentMark = parentNode.closest('.note-highlight, mark');
+    }
+
+    // Si se presiona "Quitar resaltado" (transparent) o si se pulsa el mismo color (toggle):
+    if (color === 'transparent' || !color || (currentMark && currentMark.dataset.hlColor === color)) {
+      if (currentMark) {
+        const p = currentMark.parentNode;
+        while (currentMark.firstChild) {
+          p.insertBefore(currentMark.firstChild, currentMark);
+        }
+        currentMark.remove();
+        this.saveSelection();
+        this.saveCurrentNote();
+        this.showToast('Resaltado eliminado');
+      }
+      return;
+    }
+
+    // Si ya estamos dentro de un resaltado pero cambiamos de color:
+    if (currentMark) {
+      currentMark.style.backgroundColor = color;
+      currentMark.dataset.hlColor = color;
+      this.saveSelection();
+      this.saveCurrentNote();
+      return;
+    }
+
+    // Si hay texto seleccionado, aplicar el color sin atrapar el cursor
+    if (!range.collapsed) {
       const span = document.createElement('mark');
       span.className = 'note-highlight';
+      span.dataset.hlColor = color;
       span.style.backgroundColor = color;
-      span.appendChild(range.extractContents());
-      range.insertNode(span);
-      sel.removeAllRanges();
+      span.style.padding = '0.08rem 0.2rem';
+      span.style.borderRadius = '3px';
+
+      try {
+        span.appendChild(range.extractContents());
+        range.insertNode(span);
+
+        // NODO SEPARADOR NEUTRO: Garantiza que lo que se escriba después NO herede el color
+        const spacer = document.createTextNode('\u200B');
+        if (span.nextSibling) {
+          span.parentNode.insertBefore(spacer, span.nextSibling);
+        } else {
+          span.parentNode.appendChild(spacer);
+        }
+
+        const nextRange = document.createRange();
+        nextRange.setStartAfter(spacer);
+        nextRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(nextRange);
+        this.savedRange = nextRange.cloneRange();
+      } catch (err) {
+        // Fallback estándar en caso de selecciones anidadas
+        document.execCommand('hiliteColor', false, color);
+      }
+
       this.saveCurrentNote();
     }
   }
@@ -413,9 +556,20 @@ export class NoteEditor {
     this.summaryInput.value = note.summary || '';
     this.applicationInput.value = note.application || '';
 
+    // Autoajuste de altura en textareas para celulares y tablets
+    this.autoExpandTextarea(this.keyScriptureText);
+    this.autoExpandTextarea(this.summaryInput);
+    this.autoExpandTextarea(this.applicationInput);
+
     this.updateTypeBadgeStyle();
     this.extractAndUpdateScriptures();
     this.showSavedStatus();
+  }
+
+  autoExpandTextarea(textarea) {
+    if (!textarea) return;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${Math.max(textarea.scrollHeight, 44)}px`;
   }
 
   saveCurrentNote() {
@@ -449,13 +603,25 @@ export class NoteEditor {
   }
 
   showSavingStatus() {
-    this.saveStatusEl.textContent = 'Guardando...';
-    this.saveStatusEl.className = 'save-status saving';
+    if (this.saveStatusEl) {
+      this.saveStatusEl.textContent = 'Guardando...';
+      this.saveStatusEl.className = 'save-status saving';
+    }
+    if (this.mobileSaveStatusEl) {
+      this.mobileSaveStatusEl.innerHTML = `<span>Guardando...</span>`;
+      this.mobileSaveStatusEl.className = 'sec-save-pill saving';
+    }
   }
 
   showSavedStatus() {
-    this.saveStatusEl.innerHTML = `Guardado ${ICONS.check(13)}`;
-    this.saveStatusEl.className = 'save-status saved';
+    if (this.saveStatusEl) {
+      this.saveStatusEl.innerHTML = `Guardado ${ICONS.check(13)}`;
+      this.saveStatusEl.className = 'save-status saved';
+    }
+    if (this.mobileSaveStatusEl) {
+      this.mobileSaveStatusEl.innerHTML = `${ICONS.check(12)} <span>Guardado</span>`;
+      this.mobileSaveStatusEl.className = 'sec-save-pill saved';
+    }
   }
 
   updateTypeBadgeStyle() {

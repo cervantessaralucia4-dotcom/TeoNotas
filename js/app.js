@@ -36,6 +36,7 @@ class App {
 
     this.initEditorAndPicker();
     this.bindDOMEvents();
+    this.initSectionNav();
     
     // Cargar notas (sin información predeterminada de ejemplo)
     const notes = StorageService.getNotes();
@@ -279,11 +280,58 @@ class App {
 
     document.addEventListener('click', () => this.closeAllDropdowns());
 
-    // Búsqueda en vivo de notas
-    const searchInput = document.getElementById('search-notes-input');
-    searchInput.addEventListener('input', (e) => {
-      this.searchQuery = e.target.value.trim().toLowerCase();
-      this.renderNotesList();
+    // Búsqueda en vivo de notas (Sincronizada entre Header, Drawer, Sidebar e Inicio)
+    const searchInputIds = ['search-notes-input', 'sidebar-search-input', 'mobile-search-notes-input', 'home-search-input'];
+    searchInputIds.forEach(id => {
+      const inputEl = document.getElementById(id);
+      if (inputEl) {
+        inputEl.addEventListener('input', (e) => {
+          this.setSearchQuery(e.target.value);
+        });
+      }
+    });
+
+    // Botones de Limpiar Búsqueda
+    const clearBtnIds = ['btn-clear-sidebar-search', 'btn-clear-mobile-search', 'btn-clear-home-search'];
+    clearBtnIds.forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          this.setSearchQuery('');
+          const activeInput = document.getElementById('sidebar-search-input') || document.getElementById('search-notes-input');
+          activeInput?.focus();
+        });
+      }
+    });
+
+    // Alternador de Buscador Desplegable en Móvil
+    const searchDrawer = document.getElementById('mobile-search-bar-drawer');
+    const mobileSearchInput = document.getElementById('mobile-search-notes-input');
+    document.getElementById('btn-mobile-search-toggle')?.addEventListener('click', () => {
+      const isHidden = searchDrawer.classList.contains('hidden');
+      if (isHidden) {
+        searchDrawer.classList.remove('hidden');
+        setTimeout(() => mobileSearchInput?.focus(), 120);
+      } else {
+        searchDrawer.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('btn-close-mobile-search')?.addEventListener('click', () => {
+      searchDrawer?.classList.add('hidden');
+      this.setSearchQuery('');
+    });
+
+    // Ciclo de Temas para Móvil (Noche -> Luz -> Sepia)
+    document.getElementById('btn-mobile-theme-cycle')?.addEventListener('click', () => {
+      const themes = ['dark', 'light', 'sepia'];
+      const currentIndex = themes.indexOf(this.settings.theme || 'dark');
+      const nextTheme = themes[(currentIndex + 1) % themes.length];
+      this.applyTheme(nextTheme);
+      this.settings.theme = nextTheme;
+      StorageService.saveSettings(this.settings);
+      const names = { dark: 'Modo Noche activado', light: 'Modo Luz activado', sepia: 'Modo Sepia activado' };
+      this.editor.showToast(names[nextTheme]);
     });
 
     // Filtros de categoría en Sidebar
@@ -295,7 +343,7 @@ class App {
         this.renderNotesList();
 
         if (window.innerWidth <= 768) {
-          document.getElementById('app-sidebar').classList.remove('open');
+          this.toggleSidebar(false);
         }
       });
     });
@@ -328,28 +376,82 @@ class App {
       });
     }
 
-    // Exportar a PDF / Imprimir
-    document.getElementById('btn-print-note').addEventListener('click', () => {
+    // Exportar a PDF / Imprimir (Botón Directo y modal)
+    document.getElementById('btn-quick-print-pdf')?.addEventListener('click', () => {
+      this.printCurrentNote();
+    });
+
+    document.getElementById('btn-print-note')?.addEventListener('click', () => {
       this.printCurrentNote();
     });
 
     // Copiar Resumen formateado para WhatsApp / Mensajes
-    document.getElementById('btn-copy-summary').addEventListener('click', () => {
+    document.getElementById('btn-copy-summary')?.addEventListener('click', () => {
       this.copyNoteSummary();
     });
 
-    // Exportar a Markdown
-    document.getElementById('btn-export-markdown').addEventListener('click', () => {
+    // Modal / Action Sheet de Opciones de la Nota
+    document.getElementById('btn-open-options-modal')?.addEventListener('click', () => {
+      this.openNoteOptionsModal();
+    });
+
+    document.getElementById('btn-close-note-options')?.addEventListener('click', () => {
+      this.closeNoteOptionsModal();
+    });
+
+    document.getElementById('btn-modal-close-options')?.addEventListener('click', () => {
+      this.closeNoteOptionsModal();
+    });
+
+    document.getElementById('note-options-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'note-options-modal') {
+        this.closeNoteOptionsModal();
+      }
+    });
+
+    // Acciones dentro del Modal de Opciones
+    document.getElementById('btn-modal-print-pdf')?.addEventListener('click', () => {
+      this.closeNoteOptionsModal();
+      this.printCurrentNote();
+    });
+
+    document.getElementById('btn-modal-copy-summary')?.addEventListener('click', () => {
+      this.closeNoteOptionsModal();
+      this.copyNoteSummary();
+    });
+
+    document.getElementById('btn-modal-export-md')?.addEventListener('click', () => {
+      this.closeNoteOptionsModal();
       this.exportAsMarkdown();
     });
 
-    // Eliminar nota actual
-    document.getElementById('btn-delete-current-note').addEventListener('click', () => {
+    document.getElementById('btn-modal-pin-note')?.addEventListener('click', () => {
+      if (this.activeNoteId) {
+        const isPinned = StorageService.togglePin(this.activeNoteId);
+        this.updatePinButtonState(isPinned);
+        this.renderNotesList();
+        this.editor.showToast(isPinned ? 'Nota fijada arriba' : 'Nota desfijada');
+        this.closeNoteOptionsModal();
+      }
+    });
+
+    document.getElementById('btn-modal-delete-note')?.addEventListener('click', () => {
+      this.closeNoteOptionsModal();
+      this.deleteActiveNote();
+    });
+
+    // Exportar a Markdown (Botón legado si existiera)
+    document.getElementById('btn-export-markdown')?.addEventListener('click', () => {
+      this.exportAsMarkdown();
+    });
+
+    // Eliminar nota actual (Botón legado si existiera)
+    document.getElementById('btn-delete-current-note')?.addEventListener('click', () => {
       this.deleteActiveNote();
     });
 
     // Fijar / Desfijar nota actual
-    document.getElementById('btn-pin-current-note').addEventListener('click', () => {
+    document.getElementById('btn-pin-current-note')?.addEventListener('click', () => {
       if (this.activeNoteId) {
         const isPinned = StorageService.togglePin(this.activeNoteId);
         this.updatePinButtonState(isPinned);
@@ -417,18 +519,110 @@ class App {
     document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
   }
 
+  setSearchQuery(query) {
+    this.searchQuery = (query || '').trim().toLowerCase();
+
+    // Sincronizar todos los inputs de búsqueda
+    const desktopSearch = document.getElementById('search-notes-input');
+    const sidebarSearch = document.getElementById('sidebar-search-input');
+    const mobileSearch = document.getElementById('mobile-search-notes-input');
+    const homeSearch = document.getElementById('home-search-input');
+
+    if (desktopSearch && desktopSearch.value !== query) desktopSearch.value = query;
+    if (sidebarSearch && sidebarSearch.value !== query) sidebarSearch.value = query;
+    if (mobileSearch && mobileSearch.value !== query) mobileSearch.value = query;
+    if (homeSearch && homeSearch.value !== query) homeSearch.value = query;
+
+    // Alternar visibilidad de botones "Limpiar"
+    const clearSidebar = document.getElementById('btn-clear-sidebar-search');
+    const clearMobile = document.getElementById('btn-clear-mobile-search');
+    const clearHome = document.getElementById('btn-clear-home-search');
+
+    if (clearSidebar) clearSidebar.classList.toggle('hidden', !this.searchQuery);
+    if (clearMobile) clearMobile.classList.toggle('hidden', !this.searchQuery);
+    if (clearHome) clearHome.classList.toggle('hidden', !this.searchQuery);
+
+    this.renderNotesList();
+    this.renderHomeRecents();
+  }
+
   toggleSidebar(open) {
     const sidebar = document.getElementById('app-sidebar');
     const backdrop = document.getElementById('sidebar-backdrop');
+    const mobileNavNotes = document.getElementById('mobile-nav-notes');
     if (!sidebar) return;
 
     const shouldOpen = open !== undefined ? open : !sidebar.classList.contains('open');
     if (shouldOpen) {
       sidebar.classList.add('open');
       backdrop?.classList.add('active');
+      mobileNavNotes?.classList.add('active');
+      // Foco en buscador de catálogo si se abre en móvil
+      setTimeout(() => {
+        const sidebarSearch = document.getElementById('sidebar-search-input');
+        if (window.innerWidth <= 768 && sidebarSearch) sidebarSearch.focus();
+      }, 250);
     } else {
       sidebar.classList.remove('open');
       backdrop?.classList.remove('active');
+      mobileNavNotes?.classList.remove('active');
+      // Restaurar estado activo en navegación inferior según la vista actual
+      if (this.currentView === 'home') {
+        document.getElementById('mobile-nav-home')?.classList.add('active');
+      } else {
+        document.getElementById('mobile-nav-editor')?.classList.add('active');
+      }
+    }
+  }
+
+  initSectionNav() {
+    const pills = document.querySelectorAll('.sec-nav-pill');
+    if (pills.length === 0) return;
+
+    pills.forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = pill.dataset.secTarget;
+        const targetEl = document.getElementById(targetId);
+        const scrollWrapper = document.getElementById('note-sections-scroll-wrapper') || document.querySelector('.note-sections-scroll-wrapper');
+        
+        if (targetEl) {
+          pills.forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+
+          if (scrollWrapper) {
+            const navBar = document.getElementById('mobile-section-nav');
+            const navOffset = navBar ? navBar.offsetHeight + 10 : 50;
+            const targetTop = targetEl.offsetTop - navOffset;
+            scrollWrapper.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+          } else {
+            targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      });
+    });
+
+    // IntersectionObserver para actualizar la píldora activa al desplazarse
+    const sectionCards = document.querySelectorAll('.note-section-card');
+    const scrollContainer = document.getElementById('note-sections-scroll-wrapper') || document.querySelector('.note-sections-scroll-wrapper');
+
+    if ('IntersectionObserver' in window && sectionCards.length > 0) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const cardId = entry.target.id;
+            pills.forEach(p => {
+              p.classList.toggle('active', p.dataset.secTarget === cardId);
+            });
+          }
+        });
+      }, {
+        root: scrollContainer || null,
+        rootMargin: '-15% 0px -65% 0px',
+        threshold: [0, 0.2]
+      });
+
+      sectionCards.forEach(card => observer.observe(card));
     }
   }
 
@@ -637,8 +831,37 @@ class App {
     const container = document.getElementById('home-recent-notes-container');
     if (!container) return;
 
-    const notes = StorageService.getNotes();
+    let notes = StorageService.getNotes();
+    if (this.searchQuery) {
+      const q = this.searchQuery;
+      notes = notes.filter(n => {
+        const inTitle = (n.title || '').toLowerCase().includes(q);
+        const inSpeaker = (n.speaker || '').toLowerCase().includes(q);
+        const inLoc = (n.location || '').toLowerCase().includes(q);
+        const inScriptures = (n.scriptures || []).some(s => s.toLowerCase().includes(q));
+        const inKey = (n.keyScripture?.ref || '').toLowerCase().includes(q);
+        return inTitle || inSpeaker || inLoc || inScriptures || inKey;
+      });
+    }
+
     if (notes.length === 0) {
+      if (this.searchQuery) {
+        container.innerHTML = `
+          <div class="home-empty-notes" style="padding: 1.5rem 1rem;">
+            <div class="empty-icon">${ICONS.search(28)}</div>
+            <h3 class="empty-title">Sin resultados para "${this.escapeHtml(this.searchQuery)}"</h3>
+            <p class="empty-desc">No se encontraron notas que coincidan con la búsqueda.</p>
+            <button class="btn btn-outline btn-sm" id="btn-clear-home-search-empty" style="margin-top: 0.35rem;">
+              Limpiar búsqueda
+            </button>
+          </div>
+        `;
+        document.getElementById('btn-clear-home-search-empty')?.addEventListener('click', () => {
+          this.setSearchQuery('');
+        });
+        return;
+      }
+
       container.innerHTML = `
         <div class="home-empty-notes">
           <div class="empty-icon">${ICONS.book(32)}</div>
@@ -974,10 +1197,42 @@ class App {
     document.querySelectorAll('.theme-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.theme === theme);
     });
+
+    const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+    if (mobileThemeIcon) {
+      if (theme === 'dark') mobileThemeIcon.innerHTML = ICONS.moon(16);
+      else if (theme === 'light') mobileThemeIcon.innerHTML = ICONS.sun(16);
+      else if (theme === 'sepia') mobileThemeIcon.innerHTML = ICONS.scroll(16);
+    }
+  }
+
+  openNoteOptionsModal() {
+    const modal = document.getElementById('note-options-modal');
+    if (!modal) return;
+    const note = StorageService.getNoteById(this.activeNoteId);
+    const pinTextEl = document.getElementById('modal-pin-text');
+    if (pinTextEl && note) {
+      pinTextEl.textContent = note.pinned ? 'Desfijar de la parte superior' : 'Fijar apunte al inicio';
+    }
+    modal.classList.remove('hidden');
+  }
+
+  closeNoteOptionsModal() {
+    const modal = document.getElementById('note-options-modal');
+    if (modal) modal.classList.add('hidden');
   }
 
   printCurrentNote() {
-    window.print();
+    if (this.currentView !== 'editor') {
+      this.switchView('editor');
+    }
+    this.closeNoteOptionsModal();
+    // Guardar apunte actual primero para asegurar los cambios más recientes
+    this.editor.saveCurrentNote();
+
+    setTimeout(() => {
+      window.print();
+    }, 180);
   }
 
   /**

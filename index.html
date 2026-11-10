@@ -2,11 +2,22 @@
 <html lang="es" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#1a202c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
   <title>TeoNotas - Cuaderno para Reuniones y Asambleas</title>
   <meta name="description" content="Aplicación web para celulares, tablets y PC para tomar notas de reuniones cristianas y asambleas, estructurada en 4 secciones y con selector de textos bíblicos de la Traducción del Nuevo Mundo (TNM).">
-  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- Iconos para Pantalla de Inicio (PWA / iOS / Android) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%234a6da7%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z%22/><path d=%22M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z%22/></svg>">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="font-roboto">
 
@@ -54,6 +65,18 @@
     </div>
 
     <div class="header-right">
+      <!-- Botón de Búsqueda para Móvil -->
+      <button class="btn-mobile-search-toggle" id="btn-mobile-search-toggle" aria-label="Abrir buscador de notas" title="Buscar">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+
+      <!-- Botón de Ciclo de Temas para Móvil (Noche/Luz/Sepia en 1 toque) -->
+      <button class="btn-mobile-theme-cycle" id="btn-mobile-theme-cycle" title="Cambiar tema visual" aria-label="Cambiar tema">
+        <span id="mobile-theme-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </span>
+      </button>
+
       <!-- Perfil / Nombre del Usuario (Toca para editar) -->
       <button class="user-chip-btn" id="btn-user-badge" title="Toca para cambiar tu nombre">
         <span class="user-chip-avatar">
@@ -62,7 +85,7 @@
         <span class="user-chip-name" id="user-badge-name">Usuario</span>
       </button>
 
-      <!-- Selector de Temas -->
+      <!-- Selector de Temas Completo (Desktop/Tablet) -->
       <div class="theme-selector" title="Cambiar tema visual">
         <button class="theme-btn active" data-theme="dark" title="Modo Noche">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
@@ -94,6 +117,18 @@
     </div>
   </header>
 
+  <!-- BARRA DE BÚSQUEDA DESPLEGABLE PARA CELULARES -->
+  <div class="mobile-search-drawer hidden" id="mobile-search-bar-drawer">
+    <div class="mobile-search-bar-inner">
+      <span class="mobile-search-ico">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input type="text" id="mobile-search-notes-input" placeholder="Buscar en temas, notas o textos..." autocomplete="off">
+      <button class="mobile-search-clear hidden" id="btn-clear-mobile-search" aria-label="Limpiar">&times;</button>
+      <button class="mobile-search-close" id="btn-close-mobile-search" aria-label="Cerrar">Cerrar</button>
+    </div>
+  </div>
+
   <!-- LAYOUT PRINCIPAL -->
   <div class="app-layout">
     <!-- Telón de fondo para cerrar la barra lateral en móvil al tocar afuera -->
@@ -109,6 +144,17 @@
           <span>Catálogo de Apuntes</span>
         </div>
         <button class="sidebar-close-btn" id="btn-close-sidebar" aria-label="Cerrar catálogo">&times;</button>
+      </div>
+
+      <!-- Buscador integrado en el catálogo (Visible en Móvil y Desktop) -->
+      <div class="sidebar-search-container">
+        <div class="sidebar-search-box">
+          <span class="sidebar-search-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" id="sidebar-search-input" placeholder="Buscar en todas tus notas..." autocomplete="off">
+          <button class="sidebar-search-clear hidden" id="btn-clear-sidebar-search" aria-label="Limpiar búsqueda">&times;</button>
+        </div>
       </div>
       
       <!-- Navegación por Categorías de Reuniones -->
@@ -381,6 +427,17 @@
               </button>
             </div>
 
+            <!-- Buscador en Inicio para Móvil y Desktop -->
+            <div class="home-search-container">
+              <div class="home-search-box">
+                <span class="home-search-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </span>
+                <input type="text" id="home-search-input" placeholder="Buscar por tema, discursante o texto bíblico..." autocomplete="off">
+                <button class="home-search-clear hidden" id="btn-clear-home-search" aria-label="Limpiar búsqueda">&times;</button>
+              </div>
+            </div>
+
             <!-- Contenedor dinámico de notas recientes -->
             <div class="home-recent-notes-container" id="home-recent-notes-container">
               <!-- Renderizado dinámicamente con JS -->
@@ -395,13 +452,41 @@
            ======================================================== -->
       <div class="view-panel editor-view-panel hidden" id="editor-view">
 
+        <!-- BARRA PEGAJOSA DE NAVEGACIÓN RÁPIDA ENTRE LAS 4 SECCIONES (MÓVIL & TABLET) -->
+        <nav class="mobile-section-nav" id="mobile-section-nav" aria-label="Navegación entre las 4 secciones">
+          <div class="sec-nav-track">
+            <button class="sec-nav-pill active" data-sec-target="sec-card-1">
+              <span class="pill-badge">1</span>
+              <span class="pill-text">Datos</span>
+            </button>
+            <button class="sec-nav-pill" data-sec-target="sec-card-2">
+              <span class="pill-badge">2</span>
+              <span class="pill-text">Texto Base</span>
+            </button>
+            <button class="sec-nav-pill" data-sec-target="sec-card-3">
+              <span class="pill-badge">3</span>
+              <span class="pill-text">Desarrollo</span>
+            </button>
+            <button class="sec-nav-pill" data-sec-target="sec-card-4">
+              <span class="pill-badge">4</span>
+              <span class="pill-text">Aplicación</span>
+            </button>
+          </div>
+          <div class="sec-nav-status">
+            <span class="sec-save-pill" id="mobile-save-status">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Guardado</span>
+            </span>
+          </div>
+        </nav>
+
         <!-- SCROLL CONTAINER GENERAL PARA LAS 4 SECCIONES -->
-        <div class="note-sections-scroll-wrapper">
+        <div class="note-sections-scroll-wrapper" id="note-sections-scroll-wrapper">
 
         <!-- ========================================================
              SECCIÓN 1: TÍTULO Y DATOS DE LA REUNIÓN
              ======================================================== -->
-        <section class="note-section-card section-1-header" aria-labelledby="sec1-title">
+        <section class="note-section-card section-1-header" id="sec-card-1" aria-labelledby="sec1-title">
           <div class="section-badge-row">
             <span class="section-pill">Sección 1</span>
             <span class="section-name" id="sec1-title">Título y Datos de la Reunión</span>
@@ -419,30 +504,20 @@
 
               <button class="btn btn-outline btn-sm" id="btn-copy-summary" title="Copiar resumen para WhatsApp o mensajes" style="display: inline-flex; align-items: center; gap: 4px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                <span>Copiar Resumen</span>
+                <span>Copiar</span>
               </button>
 
-              <div class="dropdown">
-                <button class="btn btn-outline btn-sm dropdown-toggle" title="Más opciones de exportación" style="display: inline-flex; align-items: center; gap: 4px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                  <span>Opciones</span>
-                </button>
-                <div class="dropdown-menu">
-                  <button class="dropdown-item" id="btn-print-note" style="display: flex; align-items: center; gap: 6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Imprimir / Guardar PDF
-                  </button>
-                  <button class="dropdown-item" id="btn-export-markdown" style="display: flex; align-items: center; gap: 6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    Exportar Markdown (.md)
-                  </button>
-                  <div class="dropdown-divider"></div>
-                  <button class="dropdown-item" id="btn-delete-current-note" style="color: var(--accent-rose); display: flex; align-items: center; gap: 6px;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                    Eliminar esta nota
-                  </button>
-                </div>
-              </div>
+              <!-- Botón Directo para Guardar/Imprimir en PDF -->
+              <button class="btn btn-outline btn-sm" id="btn-quick-print-pdf" title="Guardar o imprimir apunte en PDF" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <span>PDF</span>
+              </button>
+
+              <!-- Botón de Opciones Completo (Abre Action Sheet / Modal Cómodo) -->
+              <button class="btn btn-outline btn-sm" id="btn-open-options-modal" title="Más opciones de la nota" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                <span>Opciones</span>
+              </button>
             </div>
           </div>
 
@@ -480,7 +555,7 @@
         <!-- ========================================================
              SECCIÓN 2: TEXTO CLAVE O BASE
              ======================================================== -->
-        <section class="note-section-card section-2-key-scripture" aria-labelledby="sec2-title">
+        <section class="note-section-card section-2-key-scripture" id="sec-card-2" aria-labelledby="sec2-title">
           <div class="section-badge-row">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <span class="section-pill gold">Sección 2</span>
@@ -514,7 +589,7 @@
         <!-- ========================================================
              SECCIÓN 3: DESARROLLO DEL TEMA O DISCURSO
              ======================================================== -->
-        <section class="note-section-card section-3-development" aria-labelledby="sec3-title">
+        <section class="note-section-card section-3-development" id="sec-card-3" aria-labelledby="sec3-title">
           <div class="section-badge-row">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
               <span class="section-pill blue">Sección 3</span>
@@ -578,6 +653,7 @@
                 <button class="hl-color-btn" data-color="#bbf7d0" style="background: #bbf7d0;" title="Resaltar Verde"></button>
                 <button class="hl-color-btn" data-color="#bae6fd" style="background: #bae6fd;" title="Resaltar Celeste"></button>
                 <button class="hl-color-btn" data-color="#fbcfe8" style="background: #fbcfe8;" title="Resaltar Rosa"></button>
+                <button class="hl-color-btn hl-clear-btn" data-color="transparent" title="Quitar color resaltado (Sin color)">✕</button>
               </div>
             </div>
           </div>
@@ -593,7 +669,7 @@
         <!-- ========================================================
              SECCIÓN 4: RESUMEN Y APLICACIÓN PERSONAL
              ======================================================== -->
-        <section class="note-section-card section-4-summary-app" aria-labelledby="sec4-title">
+        <section class="note-section-card section-4-summary-app" id="sec-card-4" aria-labelledby="sec4-title">
           <div class="section-badge-row">
             <span class="section-pill green">Sección 4</span>
             <span class="section-name" id="sec4-title">Resumen y Aplicación Personal</span>
@@ -934,6 +1010,92 @@
       <div class="modal-footer">
         <button class="btn btn-outline" id="btn-cancel-edit-name">Cancelar</button>
         <button class="btn btn-primary" id="btn-save-edit-name">Guardar Nombre</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       MODAL / ACTION SHEET DE OPCIONES DE LA NOTA
+       ======================================================== -->
+  <div class="modal-backdrop hidden" id="note-options-modal" role="dialog" aria-modal="true" aria-labelledby="note-options-title">
+    <div class="modal-dialog note-options-dialog" style="max-width: 440px;">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-subtle); padding: 0.85rem 1rem;">
+        <div class="modal-title-group">
+          <span class="modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </span>
+          <div>
+            <h3 id="note-options-title" style="font-size: 1.05rem; font-weight: 700;">Opciones del Apunte</h3>
+            <p class="modal-subtitle" style="font-size: 0.78rem;">Exportar, compartir o gestionar esta reunión</p>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="btn-close-note-options" aria-label="Cerrar">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.55rem;">
+        <!-- Opción 1: Imprimir / Guardar en PDF -->
+        <button class="option-action-card" id="btn-modal-print-pdf">
+          <div class="option-card-icon" style="background: rgba(74, 109, 167, 0.15); color: var(--jw-blue-light);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </div>
+          <div class="option-card-info">
+            <h4 class="option-card-title">Guardar en PDF / Imprimir</h4>
+            <p class="option-card-desc">Crea un documento limpio con las 4 secciones listo para guardar o imprimir.</p>
+          </div>
+          <span class="option-card-arrow">›</span>
+        </button>
+
+        <!-- Opción 2: Copiar Resumen Formateado -->
+        <button class="option-action-card" id="btn-modal-copy-summary">
+          <div class="option-card-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </div>
+          <div class="option-card-info">
+            <h4 class="option-card-title">Copiar para WhatsApp</h4>
+            <p class="option-card-desc">Copia el título, orador, texto base y resumen listos para compartir.</p>
+          </div>
+          <span class="option-card-arrow">›</span>
+        </button>
+
+        <!-- Opción 3: Exportar Markdown -->
+        <button class="option-action-card" id="btn-modal-export-md">
+          <div class="option-card-icon" style="background: rgba(124, 58, 237, 0.15); color: #a78bfa;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="option-card-info">
+            <h4 class="option-card-title">Descargar archivo Markdown (.md)</h4>
+            <p class="option-card-desc">Guarda un archivo de texto con todo el contenido estructurado.</p>
+          </div>
+          <span class="option-card-arrow">›</span>
+        </button>
+
+        <!-- Opción 4: Fijar / Desfijar -->
+        <button class="option-action-card" id="btn-modal-pin-note">
+          <div class="option-card-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="option-card-info">
+            <h4 class="option-card-title" id="modal-pin-text">Fijar apunte al inicio</h4>
+            <p class="option-card-desc">Mantén este apunte visible en la parte superior del catálogo.</p>
+          </div>
+          <span class="option-card-arrow">›</span>
+        </button>
+
+        <!-- Opción 5: Eliminar Nota -->
+        <button class="option-action-card danger" id="btn-modal-delete-note">
+          <div class="option-card-icon" style="background: rgba(244, 63, 94, 0.15); color: #f43f5e;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="svg-icon"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </div>
+          <div class="option-card-info">
+            <h4 class="option-card-title" style="color: var(--accent-rose);">Eliminar este apunte</h4>
+            <p class="option-card-desc">Borrar definitivamente esta nota de tu cuaderno.</p>
+          </div>
+          <span class="option-card-arrow">›</span>
+        </button>
+      </div>
+
+      <div class="modal-footer" style="padding: 0.65rem 1rem; border-top: 1px solid var(--border-subtle);">
+        <button class="btn btn-outline" id="btn-modal-close-options" style="width: 100%; min-height: 42px;">Cerrar</button>
       </div>
     </div>
   </div>

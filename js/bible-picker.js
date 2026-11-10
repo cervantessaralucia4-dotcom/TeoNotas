@@ -29,6 +29,9 @@ export class BiblePickerModal {
       modal.innerHTML = `
         <div class="modal-dialog bible-picker-dialog-clean" role="dialog" aria-modal="true" aria-labelledby="clean-picker-title">
           
+          <!-- Indicador visual de arrastre / Bottom Sheet para Móvil -->
+          <div class="mobile-sheet-handle" aria-hidden="true"></div>
+
           <!-- Encabezado simple -->
           <div class="modal-header">
             <div class="modal-title-group">
@@ -64,6 +67,7 @@ export class BiblePickerModal {
             <div class="picker-step-view" id="view-step-1">
               <div class="book-search-row">
                 <input type="text" id="clean-book-search" placeholder="Buscar libro bíblico (ej: Mateo, Romanos, Salmos)..." autocomplete="off">
+                <button class="btn-clear-search-picker hidden" id="btn-clear-picker-search" aria-label="Limpiar búsqueda">&times;</button>
               </div>
 
               <div class="testament-filter-tabs">
@@ -179,10 +183,29 @@ export class BiblePickerModal {
     this.modalEl.querySelector('#btn-back-to-step1').addEventListener('click', () => this.goToStep(1));
     this.modalEl.querySelector('#btn-back-to-step2').addEventListener('click', () => this.goToStep(2));
 
-    // Búsqueda en vivo de libros
+    // Búsqueda en vivo de libros con botón de limpiar
+    const clearBtn = this.modalEl.querySelector('#btn-clear-picker-search');
     this.bookSearchInput.addEventListener('input', (e) => {
-      this.renderBooks(e.target.value.trim().toLowerCase());
+      const q = e.target.value.trim().toLowerCase();
+      if (clearBtn) clearBtn.classList.toggle('hidden', !q);
+      this.renderBooks(q);
     });
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        this.bookSearchInput.value = '';
+        clearBtn.classList.add('hidden');
+        this.renderBooks('');
+        this.bookSearchInput.focus();
+      });
+    }
+
+    if (this.previewText) {
+      this.previewText.addEventListener('input', () => {
+        this.previewText.style.height = 'auto';
+        this.previewText.style.height = `${Math.max(this.previewText.scrollHeight, 44)}px`;
+      });
+    }
 
     // Filtro por Testamento (Todos, AT, NT)
     this.modalEl.querySelectorAll('.testament-tab').forEach(tab => {
